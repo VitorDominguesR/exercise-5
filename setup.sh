@@ -17,6 +17,7 @@ fi
 declare -A registered_users
 # global to check not registered users
 not_registered_users=()
+LOG_PATH="/var/log"
 
 
 function create_users_from_csv()
@@ -42,7 +43,7 @@ function create_users_from_csv()
 
         # Check if output from funtion was 0 (Ok)
         if [[ $? -ne 0 ]]; then
-            echo "User $user not created: date format is wrong"
+            echo "User $user not created: date format is wrong" >> "$LOG_PATH/setup_users.log"
             not_registered_users+=($user)
             # go to the next element
             continue
@@ -67,11 +68,11 @@ check_group_exists()
 {
     # $1: group name
     if [ $(getent group $1) ]; then
-        echo "group \"$1\" exists."
+        echo "group \"$1\" exists." >> "$LOG_PATH/setup_users.log"
     else
-        echo "group \"$1\" does not exist."
+        echo "group \"$1\" does not exist." >> "$LOG_PATH/setup_users.log"
         echo "Creating..."
-        groupadd $1 || echo "Group creation failed"
+        groupadd $1 || echo "Group creation failed" >> "$LOG_PATH/setup_users.log"
     fi
 }
 
@@ -80,10 +81,10 @@ check_date_format()
     # $1: date to be checked
     # regex to check string pattern and date command to check if its valid
     if [[ $1 =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && $(date +%s -d $1) ]]; then
-        echo "The input $1 is in the yyyy-mm-dd date format."
+        echo "The input $1 is in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log" 
         return 0
     else
-        echo "The input is NOT in the yyyy-mm-dd date format."
+        echo "The input $1 is NOT in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log"
         return 1
     fi
 }
@@ -97,11 +98,15 @@ do
     # awk: process text using bash
     # awk: $1-> expiration fate; $2->primary group; $3-> second group
     users_parameters=$( echo ${registered_users[$user]} | awk -F' ' '{print "\n\tExpiration Date: " $1"\n\tGroups: " $2 " " $3}')
-    echo "$user created: $users_parameters"
+    echo "$user created: $users_parameters" >> "$LOG_PATH/setup_users.log"
 done
 
-echo "Not registered users: ${not_registered_users[@]}"
+echo "Not registered users: ${not_registered_users[@]}" >> "$LOG_PATH/setup_users.log"
 
+# stablish that only root can manage the file
+chmod 700 check_userpassword_expiration.sh
+
+# Start cron service
 service cron start
 
 echo "Adding script to crontab"
@@ -109,4 +114,4 @@ echo "Adding script to crontab"
 # Schedule  for everydaay at 23:55 
 # echo "55 23 * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
 # Every minute (test purpose)
-echo "* * * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+echo "* * * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab

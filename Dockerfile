@@ -8,4 +8,5 @@ COPY --chmod=755 . .
 
 RUN ./setup.sh > log
 
+RUN service cron start
 # useradd -m -s /bin/bash -g Financial --password $(openssl rand -base64 12) --expiredate 2024-12-06 joao
