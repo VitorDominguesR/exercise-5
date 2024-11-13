@@ -18,6 +18,7 @@ parse_etcshadow()
     for line in ${etcshadow_content[@]}
     do
         # echo $line
+        # replaced * for - because it was giving a strange error list all the files in dir
         line_parameters=($(echo "$line" |sed 's/*/-/g' |sed 's/:/\n/g'))
         # If line_parameters 2 is greater than 1 and line_parameters 4 is empty (to validate if the field is filled) and line parameter 4
         # is differente from 99999 (special case: user doesnt expire)

@@ -105,5 +105,8 @@ echo "Not registered users: ${not_registered_users[@]}"
 service cron start
 
 echo "Adding script to crontab"
-echo "55 23 * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
-# echo "* * * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+
+# Schedule  for everydaay at 23:55 
+# echo "55 23 * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+# Every minute (test purpose)
+echo "* * * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
