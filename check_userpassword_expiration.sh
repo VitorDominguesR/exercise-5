@@ -19,9 +19,10 @@ parse_etcshadow()
     do
         # echo $line
         line_parameters=($(echo "$line" |sed 's/*/-/g' |sed 's/:/\n/g'))
-        # If line_parameters 2 and 4 are greater than 1 (to validate if the field is filled) and line parameter 4
+        # If line_parameters 2 is greater than 1 and line_parameters 4 is empty (to validate if the field is filled) and line parameter 4
         # is differente from 99999 (special case: user doesnt expire)
-        if [[ ${line_parameters[2]} -gt 1 && ${line_parameters[4]} -ge 1 && ${line_parameters[4]} -ne 99999 ]]
+        
+        if [[ ${line_parameters[2]} -gt 1 && ${line_parameters[4]} != '' && ${line_parameters[4]} -ne 99999 ]]
         then
             etcshadow_line_parameters['user']=${line_parameters[0]}
         # echo ${line_parameters[@]}
