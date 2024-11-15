@@ -1,8 +1,9 @@
 user,expiredate,firstgroup,secondgroup
-joao.carlos,2024-12-26,Financial,defaultgroup
-fatima.bernardes,25-03-23,IT,defaultgroup
-ruiz.neto,2024-12-26,Financial,defaultgroup
-nelson.moutinho,2024-11-15,IT,defaultgroup
-jose.luiz,2024-19-14,IT,defaultgroup
-admin,2024-12-15,IT,defaultgroup
-luiz.cardoso,2024-11-15,IT,defaultgroup
+joao.carlos,2024-12-26,Financial,users
+fatima.bernardes,25-03-23,IT,users
+ruiz.neto,2024-12-26,Financial,users
+nelson.moutinho,2024-11-15,IT,users
+jose.luiz,2024-19-14,IT,users
+admin,2024-12-15,IT,users
+luiz.cardoso,2024-11-15,IT,users
+cesar.coelho,2023-11-15,IT,users

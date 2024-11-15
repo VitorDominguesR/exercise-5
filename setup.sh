@@ -7,29 +7,31 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# TODO
 # read csv to add users and groups
 # Check if group exists
 # add user to groups with expiration dates
 # check expiration dates
 # add to crontab
 
+# Global variables
 # declare a global key:pair array
 declare -A registered_users
 # global to check not registered users
 not_registered_users=()
 LOG_PATH="/var/log"
+today_in_seconds=$(date +%s $now)
+today_in_days=$(( $today_in_seconds / 86400 ))
 
-
+### Functions
 function create_users_from_csv()
 {
-    today_in_seconds=$(date +%s $now)
-    today_in_days=$(( $today_in_seconds / 86400 ))
     # $1: CSV input file
     user_csv_data=$(cat $1 | tail -n +2)
 
     # read: -r Disable backslashes to escape character
     # IFS: Internal file separator. Here we are setting custom separator in order to set the 
-    #four variables: user expiredate firstgroup secondgroup
+    # four variables: user expiredate firstgroup secondgroup
     while IFS=',' read -r user expiredate firstgroup secondgroup; do
         user_groups=($firstgroup $secondgroup)
         # for loop to check if groups exists
@@ -39,9 +41,9 @@ function create_users_from_csv()
             check_group_exists $group
         done
         #check expiriration date format
-        check_date_format $expiredate
+        check_valid_date $expiredate
 
-        # Check if output from funtion was 0 (Ok)
+        # Check if output from function check_valid_date was 0 (Ok)
         if [[ $? -ne 0 ]]; then
             echo "User $user not created: date format is wrong" >> "$LOG_PATH/setup_users.log"
             not_registered_users+=($user)
@@ -52,6 +54,13 @@ function create_users_from_csv()
         # useradd -m -s /bin/bash -g $firstgroup -G $secondgroup --password $(openssl rand -base64 12) $user
         user_expire_date_seconds=$(date +%s -d $expiredate)
         user_expire_days=$(( $user_expire_date_seconds / 86400 - $today_in_days ))
+
+        if [[ $user_expire_days -lt 0 ]]; then
+            echo "$user password expiration date is less or equal then todays date" >> "$LOG_PATH/setup_users.log"
+            not_registered_users+=($user)
+            continue
+        fi
+
         useradd -m -s /bin/bash -g $firstgroup -G $secondgroup $user
         echo "$user:superpassword" | chpasswd
         passwd --maxdays $user_expire_days --warndays 7 $user
@@ -76,7 +85,7 @@ check_group_exists()
     fi
 }
 
-check_date_format()
+check_valid_date()
 {
     # $1: date to be checked
     # regex to check string pattern and date command to check if its valid
@@ -88,6 +97,8 @@ check_date_format()
         return 1
     fi
 }
+#####
+
 
 echo "Reading CSV"
 create_users_from_csv userslist_add.csv
