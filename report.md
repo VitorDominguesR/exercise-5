@@ -174,12 +174,75 @@ check_valid_format_date()
 {
     # $1: date to be checked
     # regex to check string pattern and date command to check if its valid
+    # Both condition should be fulfilled
     if [[ $1 =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && $(date +%s -d $1) ]]; then
-        echo "The input $1 is in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log" 
+        # Return 0 (ok code)
+        echo "The input $1 is valid."
         return 0
     else
-        echo "The input $1 is NOT in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log"
+        # Return code 1 (Not ok)
+        echo "The input $1 is NOT valid." >> "$LOG_PATH/setup_users.log"
         return 1
     fi
 }
 ```
+
+The next step in setup script is actually run the logic to register the test users and add the job in crontab file
+
+```bash
+
+# Warning about the process started
+echo "Reading CSV"
+
+# Execute the process of register users from CSV
+create_users_from_csv userslist_add.csv
+
+# Loop to print in console users that was succefullyu registrated and log into a file
+for user in ${!registered_users[@]}
+do 
+    # First we get users parameters to print with the users creation message
+    # awk: process text using bash
+    # awk: $1-> expiration fate; $2->primary group; $3-> second group
+    users_parameters=$( echo ${registered_users[$user]} | awk -F' ' '{print "\n\tExpiration Date: " $1"\n\tGroups: " $2 " " $3}')
+    echo "$user created: $users_parameters" >> "$LOG_PATH/setup_users.log"
+done
+
+# Print users that were not registered successfully into OS
+echo "Not registered users: ${not_registered_users[@]}" >> "$LOG_PATH/setup_users.log"
+
+# stablish that only root can manage the file for security purposes
+chmod 700 check_userpassword_expiration.sh
+
+# Start cron service
+service cron start
+
+echo "Adding script to crontab" >> "$LOG_PATH/setup_users.log"
+
+# Schedule  for everydaay at 23:55
+# As we are defing this cronjob system wide, we need to specify which user will be used to run the script
+# We could give to a system user that has high privileges and no password in order to make it more secure
+# echo "55 23 * * * root $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+# Every minute (test purpose)
+echo "* * * * * root $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab
+
+# Write that process was done, indicating that steps above were performed
+echo "Done !" >> "$LOG_PATH/setup_users.log"
+```
+
+## check_userpassword_expiration.sh
+
+This next script will be the one that will be added to cronjob to execute.
+
+Here we have a simple function that will execute all the necessary flow.
+
+First we start with the same code block that require us to run as root.
+
+```bash
+# Check if the current user is a superuser, exit if the user is not
+# $EUID:  user identity utilized by the system to ascertain process privileges
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run as root"
+    exit 1
+fi
+```
+

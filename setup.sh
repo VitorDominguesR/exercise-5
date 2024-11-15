@@ -90,10 +90,10 @@ check_valid_format_date()
     # $1: date to be checked
     # regex to check string pattern and date command to check if its valid
     if [[ $1 =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && $(date +%s -d $1) ]]; then
-        echo "The input $1 is in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log" 
+        echo "The input $1 is valid."
         return 0
     else
-        echo "The input $1 is NOT in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log"
+        echo "The input $1 is NOT valid." >> "$LOG_PATH/setup_users.log"
         return 1
     fi
 }
@@ -120,9 +120,12 @@ chmod 700 check_userpassword_expiration.sh
 # Start cron service
 service cron start
 
-echo "Adding script to crontab"
+echo "Adding script to crontab" >> "$LOG_PATH/setup_users.log"
 
-# Schedule  for everydaay at 23:55 
-# echo "55 23 * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+# Schedule  for everydaay at 23:55
+# As we are defing this cronjob system wide, we need to specify which user will be used to run the script
+# echo "55 23 * * * root $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
 # Every minute (test purpose)
-echo "* * * * * $(whoami) $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab
+echo "* * * * * root $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab
+
+echo "Done !" >> "$LOG_PATH/setup_users.log"
