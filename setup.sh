@@ -20,8 +20,8 @@ declare -A registered_users
 # global to check not registered users
 not_registered_users=()
 LOG_PATH="/var/log"
-today_in_seconds=$(date +%s $now)
-today_in_days=$(( $today_in_seconds / 86400 ))
+TODAY_IN_SECONDS=$(date +%s $now)
+TODAY_IN_DAYS=$(( $TODAY_IN_SECONDS / 86400 ))
 
 ### Functions
 function create_users_from_csv()
@@ -53,7 +53,7 @@ function create_users_from_csv()
         # echo $expiredate
         # useradd -m -s /bin/bash -g $firstgroup -G $secondgroup --password $(openssl rand -base64 12) $user
         user_expire_date_seconds=$(date +%s -d $expiredate)
-        user_expire_days=$(( $user_expire_date_seconds / 86400 - $today_in_days ))
+        user_expire_days=$(( $user_expire_date_seconds / 86400 - $TODAY_IN_DAYS ))
 
         if [[ $user_expire_days -lt 0 ]]; then
             echo "$user password expiration date is less or equal then todays date" >> "$LOG_PATH/setup_users.log"

@@ -56,8 +56,8 @@ not_registered_users=()
 LOG_PATH="/var/log"
 # This part we will convert the today's date from seconds to days
 # This will be important to setup the user's password expiration date
-today_in_seconds=$(date +%s $now)
-today_in_days=$(( $today_in_seconds / 86400 ))
+TODAY_IN_SECONDS=$(date +%s $now)
+TODAY_IN_DAYS=$(( $TODAY_IN_SECONDS / 86400 ))
 ```
 
 `registered_users`: Users that was effective registered in system
@@ -122,7 +122,7 @@ function create_users_from_csv()
         # The logic is subtract the today's date (in days) from user's expiration date (in days) to set it in 
         # password expiration 
         user_expire_date_seconds=$(date +%s -d $expiredate)
-        user_expire_days=$(( $user_expire_date_seconds / 86400 - $today_in_days ))
+        user_expire_days=$(( $user_expire_date_seconds / 86400 - $TODAY_IN_DAYS ))
 
         # This condition checks if the user has an expiration date before the today's date
         if [[ $user_expire_days -lt 0 ]]; then
@@ -245,4 +245,97 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 ```
+Then we define a constant to set the expiration days check interval from today's date.
+As the exercise instructed, we setted to 3 days before expiration
 
+Here we had to use the today's date in days for the same purpose as before
+
+```bash
+LOG_WARNING_DAYS=3
+TODAY_IN_SECONDS=$(date +%s $now)
+TODAY_IN_DAYS=$(( $TODAY_IN_SECONDS / 86400 ))
+```
+
+Now we defined a function to make the code more readable when execute the validation check
+
+The function perform the following comparisons:
+
+- `Last Password Change` (in /etc/passwd) is not a special case
+- If `Max Password Days` is not empry and does expire
+
+You can see that is and AND condition and all three should be True in order to continue the script
+
+```bash
+check_user_date_parameters()
+{
+    if [[ $1 -gt 0 && ! -z $2 && $2 -ne 99999 ]]
+    then
+        return 0
+    else
+        return 1
+    fi
+}
+```
+
+Following in the script, we define the function that will perform the check
+```bash
+parse_etcshadow()
+{   
+
+    # echo "$((TODAY_IN_DAYS + 3))"
+    declare -A etcshadow_line_parameters
+    etcshadow_content=$(cat /etc/shadow)
+    for line in ${etcshadow_content[@]}
+    do
+        # echo $line
+        # replaced * for - because it was giving a strange error list all the files in dir
+        line_parameters=($(echo "$line" |sed 's/*/-/g' |sed 's/:/\n/g'))
+
+        # Last password change (in days)
+        last_password_change=${line_parameters[2]}
+        # Days that password will least before it get expired counting after last password change
+        valid_password_max_days=${line_parameters[4]}
+        
+        # If last_password_change is greater than 0 (password expired) and valid_password_max_days is empty (to validate if the field is filled) 
+        # valid_password_max_days is empty (to validate if the field is filled) and is differente from 99999 (special case: user doesnt expire)
+        # We consider user to counting expiration days else go to next element
+        if [[ $(check_user_date_parameters $last_password_change $valid_password_max_days) -eq 0 ]]
+        then
+            # First element of /etc/shadow file is the username
+            etcshadow_line_parameters['user']=${line_parameters[0]}
+            # echo ${line_parameters[@]}
+
+            # the expiration date is:  
+            # sum of date created + number of days it will expire since creation
+            etcshadow_line_parameters['expiration_date']=$(($last_password_change+$valid_password_max_days))
+        else
+            continue
+        fi
+        # echo ${etcshadow_line_parameters[@]}
+
+        # Compare if user's password expiration date is under the estipulated 3 days in exercise 
+        if [[ ${etcshadow_line_parameters['expiration_date']} -le $((TODAY_IN_DAYS + $LOG_WARNING_DAYS)) ]]
+        then
+            # Write in log if user will expire
+            days_to_expire=$(( ${etcshadow_line_parameters['expiration_date']} - TODAY_IN_DAYS ))
+            echo "[$(date +'%Y-%m-%d %H:%M')] User ${etcshadow_line_parameters['user']} will expire in $days_to_expire day(s)"
+        fi
+    done
+}
+```
+
+And finishing the exercise we execute the function `parse_etcshadow` and check if there was any errors executing the previous script 
+
+```bash
+# Executes funtion
+parse_etcshadow
+
+if [[ $? -ne 0 ]]
+then
+    echo "$0 dit not execute: error code $?"
+fi
+```
+
+## Proof-of-Concept
+
+TBD
