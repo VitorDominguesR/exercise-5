@@ -41,9 +41,9 @@ function create_users_from_csv()
             check_group_exists $group
         done
         #check expiriration date format
-        check_valid_date $expiredate
+        check_valid_format_date $expiredate
 
-        # Check if output from function check_valid_date was 0 (Ok)
+        # Check if output from function check_valid_format_date was 0 (Ok)
         if [[ $? -ne 0 ]]; then
             echo "User $user not created: date format is wrong" >> "$LOG_PATH/setup_users.log"
             not_registered_users+=($user)
@@ -85,7 +85,7 @@ check_group_exists()
     fi
 }
 
-check_valid_date()
+check_valid_format_date()
 {
     # $1: date to be checked
     # regex to check string pattern and date command to check if its valid

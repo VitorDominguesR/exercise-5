@@ -72,7 +72,7 @@ For the next step we defined some functions before execute the proper flow to re
 
 - `create_users_from_csv()`: Registers users based on supplied CSV file
 - `check_group_exists()`:  Check if the group exists before create user group (defined in CSV)
-- `check_valid_date()`: Check if its a valid date to insert in password expiration (defined in CSV)
+- `check_valid_format_date()`: Check if its a valid date to insert in password expiration (defined in CSV)
 
 **create_users_from_csv**
 
@@ -101,10 +101,10 @@ function create_users_from_csv()
             check_group_exists $group
         done
         #Here we check the input expiriration date from CSV
-        check_valid_date $expiredate
+        check_valid_format_date $expiredate
 
-        # Check if output from function check_valid_date was 0 (Ok)
-        # $?: means the result of the last command, in this case 'check_valid_date'
+        # Check if output from function check_valid_format_date was 0 (Ok)
+        # $?: means the result of the last command, in this case 'check_valid_format_date'
 
         if [[ $? -ne 0 ]]; then
 
@@ -165,6 +165,21 @@ check_group_exists()
         echo "Creating..."
         # Create if no error or log that it failed
         groupadd $1 || echo "Group creation failed" >> "$LOG_PATH/setup_users.log"
+    fi
+}
+```
+
+```bash
+check_valid_format_date()
+{
+    # $1: date to be checked
+    # regex to check string pattern and date command to check if its valid
+    if [[ $1 =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ && $(date +%s -d $1) ]]; then
+        echo "The input $1 is in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log" 
+        return 0
+    else
+        echo "The input $1 is NOT in the yyyy-mm-dd date format." >> "$LOG_PATH/setup_users.log"
+        return 1
     fi
 }
 ```
