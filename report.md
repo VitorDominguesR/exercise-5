@@ -338,4 +338,13 @@ fi
 
 ## Proof-of-Concept
 
+![image](poc/user-created-logs.png "Test")
+![image](poc/users-etc-shadow.png "Test")
+![image](poc/groups-added.png "Test")
+![image](poc/crontab-setted-poc-every-minute.png "Test")
+![image](poc/logs-being-created.png "Test")
+![image](poc/log-every-minute-poc.png "Test")
+![image](poc/proof-script-working.png "Test")
+![image](poc/final_crontab_right.png "Test")
+
 TBD

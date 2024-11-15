@@ -124,8 +124,8 @@ echo "Adding script to crontab" >> "$LOG_PATH/setup_users.log"
 
 # Schedule  for everydaay at 23:55
 # As we are defing this cronjob system wide, we need to specify which user will be used to run the script
-# echo "55 23 * * * root $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
+echo "55 23 * * * root $(pwd)/check_userpassword_expiration.sh >> /var/log/password_notices.log" >> /etc/crontab
 # Every minute (test purpose)
-echo "* * * * * root $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab
+# echo "* * * * * root $(pwd)/check_userpassword_expiration.sh >> $LOG_PATH/password_notices.log" >> /etc/crontab
 
 echo "Done !" >> "$LOG_PATH/setup_users.log"
