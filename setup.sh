@@ -76,7 +76,7 @@ function create_users_from_csv()
 check_group_exists()
 {
     # $1: group name
-    if [ $(getent group $1) ]; then
+    if [[ ! -z $(getent group $1) ]]; then
         echo "group \"$1\" exists." >> "$LOG_PATH/setup_users.log"
     else
         echo "group \"$1\" does not exist." >> "$LOG_PATH/setup_users.log"

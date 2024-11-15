@@ -25,6 +25,8 @@ needs to install `docker`
 
 `DOCKER_BUILDKIT=1 docker build --progress=plain -t exercise5:git -f Dockerfile .`
 
+- Enter container
+
 `docker run --rm -it --entrypoint bash exercise5:git`
 
 May need to run inside container `service cron start`

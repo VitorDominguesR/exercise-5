@@ -1,5 +1,24 @@
 # Exercise 5 - Report
 
+## Objective
+
+The objective of this exercise is creating a cronjob that log in a file named `password_notices.log` **every day at 23:55** if an user's password will expire within 3 days or less.
+
+## Method
+
+The exercise is divided in two scripts and one input file: `setup.sh`, `check_userpassword_expiration.sh` and `userslist_add.csv`
+
+This division allows us to setup the environment in an automated way.
+
+`setup.sh` will register the users from `userlist_add.csv` and register `check_userpassword_expiration.sh` in cronjon (system-wide) to run **every day at 23:55**
+
+`check_userpassword_expiration.sh` caontains the logic to parse /etc/shadow and check if the user's password is about to expire
+
+`userlist_add.csv` contains a list of users (valids and invalids)
+
+We decided to create this log file in `/var/log` because some programs uses this folder as a default location to write log files, but thats a parameter that could be easily modified in `setup.sh`
+
+
 ## setup.sh
 
 First of all, we created a script to setup the environment with the proper setup to execute our cron job successfully. This script has consumes a csv file containing the following fields:
@@ -127,5 +146,25 @@ function create_users_from_csv()
     # <<<: here-string you give a pre-made string of text to a program
     done <<< "$user_csv_data"
     
+}
+```
+
+```bash
+check_group_exists()
+{
+    # In this function, we check either if the group exists or not and create it
+    # $1: group name
+    # getent: search a key in a database
+    # getent group $1: retrieve /etc/groups line regarding given group and check if its not empty) 
+    if [[ ! -z $(getent group $1) ]]; then
+        # Log if the group already exists
+        echo "group \"$1\" exists." >> "$LOG_PATH/setup_users.log"
+    else
+        # Log if group does not exists
+        echo "group \"$1\" does not exist." >> "$LOG_PATH/setup_users.log"
+        echo "Creating..."
+        # Create if no error or log that it failed
+        groupadd $1 || echo "Group creation failed" >> "$LOG_PATH/setup_users.log"
+    fi
 }
 ```
