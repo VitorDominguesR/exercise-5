@@ -299,7 +299,7 @@ parse_etcshadow()
         # If last_password_change is greater than 0 (password expired) and valid_password_max_days is empty (to validate if the field is filled) 
         # valid_password_max_days is empty (to validate if the field is filled) and is differente from 99999 (special case: user doesnt expire)
         # We consider user to counting expiration days else go to next element
-        if [[ $(check_user_date_parameters $last_password_change $valid_password_max_days) -eq 0 ]]
+        if check_user_date_parameters $last_password_change $valid_password_max_days
         then
             # First element of /etc/shadow file is the username
             etcshadow_line_parameters['user']=${line_parameters[0]}
@@ -330,10 +330,6 @@ And finishing the exercise we execute the function `parse_etcshadow` and check i
 # Executes funtion
 parse_etcshadow
 
-if [[ $? -ne 0 ]]
-then
-    echo "$0 dit not execute: error code $?"
-fi
 ```
 
 ## Proof-of-Concept
