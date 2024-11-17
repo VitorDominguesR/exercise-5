@@ -338,13 +338,34 @@ fi
 
 ## Proof-of-Concept
 
-![image](poc/user-created-logs.png "Test")
-![image](poc/users-etc-shadow.png "Test")
-![image](poc/groups-added.png "Test")
-![image](poc/crontab-setted-poc-every-minute.png "Test")
-![image](poc/logs-being-created.png "Test")
-![image](poc/log-every-minute-poc.png "Test")
-![image](poc/proof-script-working.png "Test")
-![image](poc/final_crontab_right.png "Test")
+1. Users and groups created from `userlist_add.csv` using `setup.sh`
+    
+    ![](poc/user-created-logs.png )
 
-TBD
+1. `/etc/shadow` content after creating the users
+    
+    ![](poc/users-etc-shadow.png )
+
+1. `/etc/group` content after creating the groups
+    
+    ![](poc/groups-added.png )
+
+1. `crontab` entry to execute `check_userpassword.expiration.sh` **every minute** as `root` user and write in `/var/log/password_notices.log`
+    
+    ![](poc/crontab-setted-poc-every-minute.png )
+
+1. Logs created in `/var/log/` after executing cronjob
+    
+    ![](poc/logs-being-created.png )
+
+1. Content of `password_notices.log`
+    
+    ![](poc/log-every-minute-poc.png )
+
+1. Logged as user `barcelos.cunha` with a message stating the user's password will expire in 3 days, as writted in the logs
+    
+    ![](poc/proof-script-working.png )
+
+1. Script adjusted to write in `cronjob` to run everyday at 23:55
+    
+    ![](poc/final_crontab_right.png )
